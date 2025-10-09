@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Drukspillet 🍻</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #b37e75, #ff7535);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      overflow: hidden;
+    }
+    #card {
+      font-size: 1.5rem;
+      background: rgba(255,255,255,0.1);
+      padding: 2rem;
+      border-radius: 20px;
+      max-width: 400px;
+      margin-bottom: 2rem;
+      transition: 0.3s ease;
+    }
+    button {
+      background: white;
+      color: #ff6d48;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 0.5rem;
+    }
+    input {
+      padding: 0.5rem;
+      border-radius: 10px;
+      border: none;
+      width: 250px;
+      margin-right: 0.5rem;
+    }
+    .hidden { display: none; }
+    .logo img { width: 80px; }
+    #button-group {
+      display: flex;
+      flex-direction: row;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* --- Lykkehjulet --- */
+    #wheelCanvas {
+      border: 5px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      margin: 1rem;
+      transition: transform 4s ease-out;
+    }
+
+    /* Pil i højre side */
+    #pointer {
+      position: absolute;
+      top:80%;
+      right:48%;
+      transform: translateY(-50%) rotate(-360deg);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid #fff;
+      filter: drop-shadow(0 0 4px rgba(0,0,0,0.4));
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="./steif.png" alt="Logo">
+    <h2>Drukspillet</h2>
+  </div>
+
+  <!-- Kategori valg -->
+  <div id="category-selection">
+    <h3>Vælg en kategori 🍺</h3>
+    <button class="category" data-category="klassisk">Klassisk</button>
+
+    <button class="category" data-category="sandhed">Sandhed</button>
+    <button class="category" data-category="vovet">Konsekvens</button>
+    <button class="category" data-category="egen">Egne spørgsmål</button>
+    <button class="category" data-category="lykkehjul">Lykkehjulet </button>
+    <button class="category" data-category="jatak">1-100</button>
+  </div>
+
+  <!-- Egen kategori setup -->
+  <div id="custom-setup" class="hidden">
+    <h3>Tilføj dine egne spørgsmål 🎲</h3>
+    <div>
+      <input type="text" id="customInput" placeholder="Skriv et spørgsmål..." />
+      <button id="addQuestion">Tilføj</button>
+    </div>
+    <p id="customCount">Antal spørgsmål: 0</p>
+    <div>
+      <button id="clearQuestions" style="background:#ffcccc; color:#a30000;">❌ Slet alle spørgsmål</button>
+    </div>
+    <button id="backToCategories">⬅️ Tilbage</button>
+    <button id="startCustom">Start spillet ✅</button>
+  </div>
+
+  <!-- Spillet -->
+  <div id="game" class="hidden">
+    <div id="card">Tryk på “Næste” for at starte 🍻</div>
+    <div id="button-group">
+      <button id="back">⬅️ Tilbage</button>
+      <button id="next">Næste</button>
+    </div>
+  </div>
+
+    <!-- Spillet -->
+  <div id="game2" class="hidden">
+    <div id="card">Tryk på “Næste” sfor at starte 🍻</div>
+    <div id="button-group">
+      <button id="back">⬅️ Tilbage</button>
+      <button id="next">Næste</button>
+    </div>
+  </div>
+
+  <!-- Lykkehjul kategori -->
+  <div id="wheel-section" class="hidden">
+    <h3>Lykkehjulet 🎡</h3>
+    <p>Tilføj spillernavne og spin hjulet!</p>
+    <div>
+      <input type="text" id="nameInput" placeholder="Indtast navn..." />
+      <button id="addName">Tilføj</button>
+    </div>
+    <p id="nameList">Ingen navne tilføjet endnu.</p>
+
+    <!-- Hjul og pil -->
+    <div style="position: relative; display: inline-block;">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <div id="pointer"></div>
+    </div>
+
+    <div>
+      <button id="spinWheel">🎯 Spin</button>
+      <button id="backFromWheel">⬅️ Tilbage</button>
+    </div>
+    <p id="winner"></p>
+  </div>
+
+  <script>
+
+    
+    const categories = {
+      klassisk: [
+        "Tag 2 slurke!",
+        "Den yngste drikker!",
+        "Den ælste drikker!",
+        "Drik hvis du før har fået under 02!",
+        "Drik hvis du ikke er jomfru!",
+        "Fællesskål",
+        "Hvis du før har knækket dig 2 gange på en aften, så drikker du!",
+        "Drik hvis du har sendt en snap i dag!",
+        "Den med flest instagram følgere drikker!"
+      ],
+      
+      sandhed: [
+        "Sandhed: Hvem var din sidste crush?",
+        "Sandhed: Har du nogensinde løjet for en ven?",
+        "Sandhed: Hvem i rummet vil du mindst kysse?",
+        "Sandhed: Hvad er din største hemmelighed?"
+      ],
+      vovet: [
+        "Giv en kompliment til personen til højre!",
+        "Lav et shot, eller tag 3 slurke!",
+        "Giv et kys på kinden til en du vælger!",
+       "Spank din venstre sidemand!",
+        "Fortæl en pinlig historie, eller drik!"
+        
+      ],
+      jatak: [
+    "1: Den største svagdrikker!",
+"2: Den der bliver gift først!",
+"3: Den der har den bedste røv!",
+"4: Den der er mest min type!",
+"5: Den der er bedst til at sutte pik!",
+"6: Den der kunne falde i søvn under sex!",
+"7: Den der har de flotteste øjne!",
+"8: Den der bliver mest fuld i aften!",
+"9: Den mest selvsikre!",
+"10: Den sjoveste!",
+"11: Den der har den bedste krop!",
+"12: Den der scorer flest!",
+"13: Den der sidst har haft sex!",
+"14: Den der drikker mest!",
+"15: Den der kysser bedst!",
+"16: Den der har haft sex det mærkeligste sted!",
+"17: Den pæneste!",
+"18: Den der har haft en trekant!",
+"19: Den der brækker sig altid til fester!",
+"20: Den bedste kærestepotentiale!",
+"21: Den mest tilbøjelige til at have en bolleven!",
+"22: Den der har gjort det mest vanvittige i en brandert!",
+"23: Den der afviser mest!",
+"24: Den der tror selv de er sjovest!",
+"25: Den der stønner højest!",
+"26: Den der tager længst tid om at gøre sig klar inden en fest!",
+"27: Den der scorer bedst!",
+"28: Den der har haft flest orgasmer!",
+"29: Den der forandrer sig mest når de drikker!",
+"30: Den der har haft sex med flest!",
+"31: Den mest uskyldige!",
+"32: Den mest optaget af sit eget udseende!",
+"33: Den mest akavede!",
+"34: Den der bedst kan lide hård sex!",
+"35: Den der har kysset flest fra dette lokale!",
+"36: Den der har det flotteste smil!",
+"37: Den der bliver pænest når de bliver ældre!",
+"38: Den mest jaloux!",
+"39: Den der kunne finde på at få den i røven!",
+"40: Den bedste i sengen!",
+"41: Den der har den største pik!",
+"42: Den der er bedst til at slikke!",
+"43: Den der har de vildeste sexfantasier!",
+"44: Den der har de flotteste ben!",
+"45: Den mest tilbøjelige til at have sexsygdomme!",
+"46: Den mest fløde!",
+"47: Den der scorer aldrig, men bliver scoret!",
+"48: Den der får børn først!",
+"49: Den der dufter bedst!",
+"50: Den der bruger Snapchat mest!",
+"51: Den der kunne finde på at have sex under menstruation!",
+"52: Den der ser mest porno!",
+"53: Den største kælling!",
+"54: Den mest svisnk!",
+"55: Den der har det bedste scoreblik!",
+"56: Den værste til at den billigste!",
+"57: Den største instagrammer!",
+"58: Den der giver den bedste lapdance!",
+"59: Den der har de flotteste bryster!",
+"60: Den mest tilbøjelige til at have en kæreste!",
+"61: Den mest følsomme!",
+"62: Den man kunne få de flotteste børn med!",
+"63: Den mest pumpede!",
+"64: Den der har det flotteste smil!",
+"65: Den med det sjoveste grin!",
+"66: Den med flest humørsvingninger!",
+"67: Den mest dominerende i sengen!",
+"68: Den mest tilbøjelige til at deltage i reality!",
+"69: Den mest liderlige!",
+"70: Den der bedst kan lide madsex!",
+"71: Den der er oftest forsinket!",
+"72: Den med det sødeste grin!",
+"73: Den der har brugt mest falsk ID!",
+"74: Den der tager mest snus!",
+"75: Den mest kærestekedelige!",
+"76: Den mest sporty!",
+"77: Den største fitness-babe!",
+"78: Den der aldrig har penge på kontoen!",
+"79: Den der altid er alene!",
+"80: Den der sender flest nudes!",
+"81: Den der bruger flest penge på sin kæreste!",
+"82: Den der griner mest!",
+"83: Den mest tilbøjelige til at bo på gaden!",
+"84: Den mest ansvarlige!",
+"85: Den der snorker mest!",
+"86: Den mest tilbøjelige til at lave et sextape!",
+"87: Den mest tilbøjelige til at droppe ud af gym!",
+"88: Den mest kolde!",
+"89: Den mest tilbøjelige til at være utro!",
+"90: Den værste til at bruge beskyttelse!",
+"91: Den der køber mest tøj!",
+"92: Den der lyver mest!",
+"93: Den der har gået længst tid uden sex!",
+"94: Den der lyver mest for sine forældre!",
+"95: Den der har den største guldske i røven!",
+"96: Den med bedst tøjstil!",
+"97: Den største dramaqueen!",
+"98: Den mest tilbøjelige til at knuse ens hjerte!",
+"99: Den der kigger mest i spejlet!",
+"100: Den der ville gøre de sygeste ting for penge!",
+"101: Den der har onaneret det mærkeligste sted!",
+
+    ],
+      egen: []
+    };
+
+    const categoryButtons = document.querySelectorAll(".category");
+    const categorySelection = document.getElementById("category-selection");
+    const gameSection = document.getElementById("game");
+    const cardEl = document.getElementById("card");
+    const nextBtn = document.getElementById("next");
+    const backBtn = document.getElementById("back");
+
+    const customSetup = document.getElementById("custom-setup");
+    const customInput = document.getElementById("customInput");
+    const addQuestionBtn = document.getElementById("addQuestion");
+    const startCustomBtn = document.getElementById("startCustom");
+    const backToCategoriesBtn = document.getElementById("backToCategories");
+    const customCount = document.getElementById("customCount");
+    const clearQuestionsBtn = document.getElementById("clearQuestions");
+
+    // Lykkehjul variabler
+    const wheelSection = document.getElementById("wheel-section");
+    const nameInput = document.getElementById("nameInput");
+    const addNameBtn = document.getElementById("addName");
+    const nameList = document.getElementById("nameList");
+    const spinWheelBtn = document.getElementById("spinWheel");
+    const backFromWheelBtn = document.getElementById("backFromWheel");
+    const winnerEl = document.getElementById("winner");
+    const wheelCanvas = document.getElementById("wheelCanvas");
+    const ctx = wheelCanvas.getContext("2d");
+    let names = [];
+    let currentRotation = 0;
+
+    let currentCategory = [];
+
+    // Tegn lykkehjulet
+    function drawWheel() {
+      const num = names.length;
+      const radius = wheelCanvas.width / 2;
+      ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+      if (num === 0) return;
+
+      for (let i = 0; i < num; i++) {
+        const angle = (i / num) * 2 * Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, angle, angle + (2 * Math.PI / num));
+        ctx.fillStyle = i % 2 === 0 ? "#ffb347" : "#ff7e5f";
+        ctx.fill();
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + Math.PI / num);
+        ctx.fillStyle = "white";
+        ctx.font = "bold 16px Poppins";
+        ctx.fillText(names[i], radius / 2 - names[i].length * 3, 5);
+        ctx.restore();
+      }
+    }
+
+    function updateNameList() {
+      nameList.textContent = names.length > 0 ? "Spillere: " + names.join(", ") : "Ingen navne tilføjet endnu.";
+      drawWheel();
+    }
+
+    
+
+    // --- Kategori valg ---
+    categoryButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const category = btn.dataset.category;
+        if (category === "egen") {
+          categorySelection.classList.add("hidden");
+          customSetup.classList.remove("hidden");
+          updateCustomCount();
+          return;
+        }
+        if (category === "lykkehjul") {
+          categorySelection.classList.add("hidden");
+          wheelSection.classList.remove("hidden");
+          updateNameList();
+          return;
+        }
+             if (category === "jatak") {
+          currentCategory = categories[category];
+        questionIndex = 0; // nulstil rækkefølge
+        categorySelection.classList.add("hidden");
+        gameSection.classList.remove("hidden");
+        cardEl.textContent = "Tryk på “Næste” for at starte 🍻";
+        }
+        currentCategory = categories[category];
+        questionIndex = 0; // nulstil rækkefølge
+        categorySelection.classList.add("hidden");
+        gameSection.classList.remove("hidden");
+        cardEl.textContent = "Tryk på “Næste” for at starte 🍻";
+      });
+    });
+
+    // --- Custom kategori ---
+    addQuestionBtn.addEventListener("click", () => {
+      const question = customInput.value.trim();
+      if (question !== "") {
+        categories.egen.push(question);
+        customInput.value = "";
+        updateCustomCount();
+      }
+    });
+    clearQuestionsBtn.addEventListener("click", () => {
+      categories.egen = [];
+      updateCustomCount();
+    });
+    function updateCustomCount() {
+      customCount.textContent = `Antal spørgsmål: ${categories.egen.length}`;
+    }
+    startCustomBtn.addEventListener("click", () => {
+      if (categories.egen.length === 0) return alert("Tilføj mindst ét spørgsmål før du starter!");
+      currentCategory = categories.egen;
+      questionIndex = 0;
+      customSetup.classList.add("hidden");
+      gameSection.classList.remove("hidden");
+      cardEl.textContent = "Tryk på “Næste” for at starte 🍻";
+    });
+    backBtn.addEventListener("click", () => {
+      gameSection.classList.add("hidden");
+      categorySelection.classList.remove("hidden");
+    });
+    backToCategoriesBtn.addEventListener("click", () => {
+      customSetup.classList.add("hidden");
+      categorySelection.classList.remove("hidden");
+    });
+
+    // --- Game ---
+    let questionIndex = 0;
+    nextBtn.addEventListener("click", () => {
+      if (currentCategory.length === 0) return;
+      cardEl.textContent = currentCategory[questionIndex];
+      cardEl.style.transform = "scale(1.05)";
+      setTimeout(() => cardEl.style.transform = "scale(1)", 200);
+      questionIndex = (questionIndex + 1) % currentCategory.length;
+    });
+
+    // --- Lykkehjulet ---
+    addNameBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      if (name && !names.includes(name)) {
+        names.push(name);
+        nameInput.value = "";
+        updateNameList();
+      }
+    });
+
+    spinWheelBtn.addEventListener("click", () => {
+      if (names.length < 2) return alert("Tilføj mindst 2 navne for at spinne!");
+
+      const sliceAngle = 360 / names.length;
+      const randomIndex = Math.floor(Math.random() * names.length);
+      const spins = Math.floor(Math.random() * 5) + 5;
+      const stopAngle = (randomIndex * sliceAngle) + (sliceAngle / 2);
+
+      const rotation = 360 * spins + 90 - stopAngle;
+      currentRotation = rotation % 360;
+      wheelCanvas.style.transition = "transform 4s ease-out";
+      wheelCanvas.style.transform = `rotate(${rotation}deg)`;
+
+      winnerEl.textContent = "";
+      setTimeout(() => {
+        winnerEl.textContent = `🎉 Vinderen er: ${names[randomIndex]}! 🍻`;
+      }, 4000);
+    });
+
+    backFromWheelBtn.addEventListener("click", () => {
+      wheelSection.classList.add("hidden");
+      categorySelection.classList.remove("hidden");
+      winnerEl.textContent = "";
+      names = [];
+      updateNameList();
+    });
+
+
+ 
+
+
+    
+  </script>
+</body>
+</html>

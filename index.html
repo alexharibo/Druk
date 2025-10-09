@@ -462,64 +462,7 @@
     });
 
 
-  // --- AI integration ---
-  async function generateAIQuestion(klassisk) {
-    const prompt = `Lav ét sjovt og kreativt drukspørgsmål på dansk i kategorien "${klassisk}". 
-    Eksempler: "Giv en kompliment til personen til højre!", "Lav et shot eller tag 3 slurke!", "Lav et shot eller tag 9 slurke!", "Stå på tær"`;
-
-    try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer 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"
-        },
-        body: JSON.stringify({
-          model: "gpt-5",
-          messages: [{ role: "user", content: prompt }],
-          max_tokens: 60,
-          temperature: 0.9
-        })
-      });
-
-      const data = await response.json();
-      const aiQuestion = data.choices?.[0]?.message?.content?.trim();
-
-      if (aiQuestion) {
-        currentCategory.push(aiQuestion); // tilføj AI-spørgsmålet til listen
-        return aiQuestion;
-      } else {
-        return "AI kunne ikke finde på et spørgsmål denne gang 🤖🍻";
-      }
-    } catch (err) {
-      console.error(err);
-      return "Fejl ved forbindelse til AI 😅";
-    }
-  }
-
-  // Ændr “Næste”-knappen, så der 10% af gangene bruges AI
-  nextBtn.addEventListener("click", async () => {
-    if (currentCategory.length === 0) return;
-
-    let question;
-    if (Math.random() < 0.1) {
-      // 10% chance for AI-spørgsmål
-      cardEl.textContent = "🤖 Finder på et nyt spørgsmål...";
-      question = await generateAIQuestion("drukspil");
-    } else {
-      question = currentCategory[questionIndex];
-      questionIndex = (questionIndex + 1) % currentCategory.length;
-    }
-
-    cardEl.textContent = question;
-    cardEl.style.transform = "scale(1.05)";
-    setTimeout(() => cardEl.style.transform = "scale(1)", 200);
-  });
-
-  
-
-
-
+ 
     
   </script>
 </body>

@@ -1,0 +1,79 @@
+body {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #b37e75, #ff7535);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  text-align: center;
+}
+
+#card {
+  font-size: 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2rem;
+  border-radius: 20px;
+  max-width: 400px;
+  margin-bottom: 2rem;
+  transition: 0.3s ease;
+}
+
+button {
+  background: #a55d46;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 0.5rem;
+}
+
+input {
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: none;
+  width: 250px;
+  margin-right: 0.5rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.logo img {
+  width: 80px;
+}
+
+#button-group {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* --- Lykkehjulet --- */
+#wheelCanvas {
+  border: 5px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  margin: 1rem;
+  transition: transform 4s ease-out;
+}
+
+/* Pil i højre side */
+#pointer {
+  position: absolute;
+  top: 80%;
+  right: 48%;
+  transform: translateY(-50%) rotate(-360deg);
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 20px solid #fff;
+  filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.4));
+  z-index: 10;
+}

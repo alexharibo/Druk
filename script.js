@@ -125,7 +125,7 @@ const categories = {
   "99: Hvem kigger sig mest i spejlet?",
   "100: Hvem ville gøre de sygeste ting for penge?",
   "101: Hvem har onaneret det mærkeligste sted?",
-     "102: Hvem her skal bestemme, hvem der må vælge en, som skal slå sten saks papir om 5 slurke?"
+     "102: Spillet er slut. Fællesskål!"
 ],
 
   egen: []

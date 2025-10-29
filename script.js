@@ -124,7 +124,8 @@ const categories = {
   "98: Hvem er mest tilbøjelig til at knuse ens hjerte? (Forklar)",
   "99: Hvem kigger sig mest i spejlet?",
   "100: Hvem ville gøre de sygeste ting for penge?",
-  "101: Hvem har onaneret det mærkeligste sted?"
+  "101: Hvem har onaneret det mærkeligste sted?",
+     "102: Hvem her skal bestemme, hvem der må vælge en, som skal slå sten saks papir om 5 slurke?"
 ],
 
   egen: []
